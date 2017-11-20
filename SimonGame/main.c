@@ -13,7 +13,11 @@
 //     |__/ |___ |    | | \| |___ .__/
 //
 //-----------------------------------------------------------------------------
-
+#define START (0)
+#define PLAY_BUTTON_PRESSED (1)
+#define BEGIN_GAME (2)
+#define PLAY_TONES (3)
+#define PLAYER_TURN (4)
 //-----------------------------------------------------------------------------
 //     ___      __   ___  __   ___  ___  __
 //      |  \ / |__) |__  |  \ |__  |__  /__`
@@ -47,7 +51,9 @@ int main(void)
 {
     /* Initialize the SAM system */
     SystemInit();
-
+	
+	uint8_t state = START;
+	
     /* Replace with your application code */
     while (1) 
     {
@@ -55,7 +61,7 @@ int main(void)
 		switch(state)
 		{
 			case START:
-				// Buttons on dim
+				rgb()
 				// Print Welcome Message
 			break;
 			
