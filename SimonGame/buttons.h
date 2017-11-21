@@ -1,5 +1,24 @@
-#ifndef SPI_H
-#define SPI_H
+/*
+  Copyright (c) 2013 Parlor Labs.  All rights reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+//! @file  -- THIS FILE NEEDS A BRIEF DESCRIPTION --
+
+#ifndef buttons_H
+#define buttons_H
 
 //------------------------------------------------------------------------------
 //             __             __   ___  __
@@ -7,6 +26,9 @@
 //     | | \| \__, |___ \__/ |__/ |___ .__/
 //
 //------------------------------------------------------------------------------
+
+#include <stdint.h>
+#include <Stdbool.h>
 
 //------------------------------------------------------------------------------
 //      __   ___  ___         ___  __
@@ -36,6 +58,9 @@
 //
 //------------------------------------------------------------------------------
 
+void buttons_init(void);
+int8_t buttons_get();
+int8_t joystick_pressed();
 //------------------------------------------------------------------------------
 //      __        __          __
 //     |__) |  | |__) |    | /  `
@@ -43,17 +68,4 @@
 //
 //------------------------------------------------------------------------------
 
-void spi_init();
-void spi_write_led(uint8_t* ydata);
-void spi_write_video(uint8_t* data);
-void disable_spi_interrupt();
-void enable_spi_interrupt();
-uint8_t spi_read();
-uint8_t spi(uint8_t data);
-uint8_t spi_lock();
-void spi_unlock();
-uint8_t spi_newdata();
-uint8_t spi_latch();
-void spi_latch_set();
-void spi_latch_clr();
-#endif /* SPI_H */
+#endif /* buttons_H */

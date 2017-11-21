@@ -152,33 +152,64 @@ void spi_init()
 
   // Set up the BAUD rate
   SERCOM4->SPI.BAUD.reg = 23; //100KHz - too slow, but easy to see on the Logic Analyzer
-  
-	// Enable  interrupts
-	SERCOM4->SPI.INTENSET.bit.TXC = 1;
-	NVIC_DisableIRQ(SERCOM4_IRQn);
-	NVIC_ClearPendingIRQ(SERCOM4_IRQn);
-	NVIC_SetPriority(SERCOM4_IRQn, 0);
-	NVIC_EnableIRQ(SERCOM4_IRQn);
 
+	
   //////////////////////////////////////////////////////////////////////////////
   // Enable the SPI
   ////////////////////////////////////////////////////////////////////////////// 
   SERCOM4->SPI.CTRLA.bit.ENABLE = 1;
   // Wait for it to complete
   while (SERCOM4->SPI.SYNCBUSY.bit.ENABLE);
+ SERCOM4->SPI.INTENSET.bit.TXC = 1;
 
 }
 
 
 //==============================================================================
-void spi_write(uint8_t* ydata)
-{
+void spi_write_led(uint8_t* ydata)
+{	
 	if(!mutex && !latched) 
 	{
 		memcpy(buffer, ydata, BUFFER_LEN);
 		spi(ydata[ind++]);
 		mutex = 1;
 	}
+}
+
+//==============================================================================
+void spi_write_video(uint8_t* data)
+{
+
+	//SERCOM4->SPI.BAUD.reg = 3; //6 MHz - for the Video
+	
+	// Clear interrupt bit
+	//SERCOM4->SPI.INTFLAG.bit.TXC = 1;
+	
+  // Wait for the data register to be empty
+  while (SERCOM4->SPI.INTFLAG.bit.DRE == 0); 
+  // Send the data
+  SERCOM4->SPI.DATA.bit.DATA = data;
+  // Wait for transfer complete
+  while( SERCOM4->SPI.INTFLAG.bit.TXC == 0 || SERCOM4->SPI.INTFLAG.bit.DRE == 0 );
+	// Set up the BAUD rate
+	//SERCOM4->SPI.BAUD.reg = 23; //100KHz - too slow, but easy to see on the Logic Analyzer
+}
+
+void disable_spi_interrupt()
+{
+	//disable interrupt
+	SERCOM4->SPI.INTENCLR.bit.TXC = 1;
+	//NVIC_DisableIRQ(SERCOM4_IRQn);
+	//SERCOM4->SPI.INTFLAG.bit.TXC = 1;
+}
+
+void enable_spi_interrupt()
+{
+	SERCOM4->SPI.INTENSET.bit.TXC = 1;
+	NVIC_DisableIRQ(SERCOM4_IRQn);
+	NVIC_ClearPendingIRQ(SERCOM4_IRQn);
+	NVIC_SetPriority(SERCOM4_IRQn, 0);
+	NVIC_EnableIRQ(SERCOM4_IRQn);
 }
 
 //==============================================================================

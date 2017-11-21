@@ -5,10 +5,8 @@
 //
 //------------------------------------------------------------------------------
 
-#include "led.h"
-#include "spi.h"
-
-
+#include "timer.h"
+#include "sam.h"
 
 //------------------------------------------------------------------------------
 //      __   ___  ___         ___  __
@@ -30,15 +28,13 @@
 //      \/  /~~\ |  \ | /~~\ |__) |___ |___ .__/
 //
 //------------------------------------------------------------------------------
-uint16_t led_values[16];
-uint8_t data[24];
+
 //------------------------------------------------------------------------------
 //      __   __   __  ___  __  ___      __   ___  __
 //     |__) |__) /  \  |  /  \  |  \ / |__) |__  /__`
 //     |    |  \ \__/  |  \__/  |   |  |    |___ .__/
 //
 //------------------------------------------------------------------------------
-static void bit_conversion(uint16_t* array, uint8_t* data_array);
 
 //------------------------------------------------------------------------------
 //      __        __          __
@@ -47,39 +43,64 @@ static void bit_conversion(uint16_t* array, uint8_t* data_array);
 //
 //------------------------------------------------------------------------------
 
-void rgb(uint8_t light_select, uint8_t red, uint8_t green, uint8_t blue)
-{
-	red_set(light_select, red);
-	green_set(light_select, green);
-	blue_set(light_select, blue);
-	bit_conversion(led_values, data);
-	spi_write(data);
-}
-
 //==============================================================================
-void red_set(uint8_t light_select, uint8_t led_value)
+void timer_init()
 {
-	led_values[light_select*3-3] = led_value * 16;
-	bit_conversion(led_values, data);
-	spi_write(data);
+	// Enable the TCC bus clock (CLK_TCCx_APB)
+	PM->APBCMASK.bit.TCC0_ = 1;
+	
+	// Configure the General Clock with the 48MHz clk
+	GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_TCC0_TCC1) |
+	                    GCLK_CLKCTRL_GEN_GCLK0 |
+	                    GCLK_CLKCTRL_CLKEN;
+    // Wait for the GCLK to be synchronized
+    while(GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY);
+
+	timer_disable();
+		
+	// Enable peripheral function F on  PA15
+	PORT->Group[0].PINCFG[15].bit.PMUXEN = 1;
+	PORT->Group[0].PMUX[7].bit.PMUXO = PORT_PMUX_PMUXO_F_Val;
+	
+
+	// Select the Waveform Generation mode
+	TCC0->WAVE.bit.WAVEGEN = TCC_WAVE_WAVEGEN_MFRQ_Val; // match frequency mode
+	while (TCC0->SYNCBUSY.bit.WAVE);                    // wait for synchronization
+
+	// Set output matrix to output everything on channel CC0
+	TCC0->WEXCTRL.bit.OTMX = 0x2;
+	
+	timer_set_per();
+
+	// Set the prescaler to 0
+	TCC0->CTRLA.bit.PRESCALER = 0;
+	
+	// Set up the output event - turn on the Match Compare Event Output - 0
+	TCC0->EVCTRL.bit.MCEO0 = 1;
+
+	// Enable TCC0
+	//timer_enable();
 }
 
-//==============================================================================
-void green_set(uint8_t light_select, uint8_t led_value)
+//============================================================================
+void timer_set_per()
 {
-	led_values[light_select*3-2] = led_value * 16;
-	bit_conversion(led_values, data);
-	spi_write(data);
+	// Set the time to count and wait for synchronization.
+	TCC0->CC[0].bit.CC = 100;
+	while (TCC0->SYNCBUSY.bit.CC0);
 }
 
-//==============================================================================
-void blue_set(uint8_t light_select, uint8_t led_value)
+//============================================================================
+void timer_enable()
 {
-	led_values[light_select*3-1] = led_value * 16;
-	bit_conversion(led_values, data);
-	spi_write(data);
+	TCC0->CTRLA.bit.ENABLE = 1;
 }
 
+//============================================================================
+void timer_disable()
+{
+	TCC0->CTRLA.bit.ENABLE = 0;
+}
 
 //------------------------------------------------------------------------------
 //      __   __              ___  ___
@@ -88,27 +109,6 @@ void blue_set(uint8_t light_select, uint8_t led_value)
 //
 //------------------------------------------------------------------------------
 
-//==============================================================================
-static void bit_conversion(uint16_t* array, uint8_t* data_array)
-{
-	uint8_t ind = 0;
-	
-	for (int i = 8; i > 0; i--)
-	{
-		data_array[ind++] = (array[i * 2 - 1] & 0x0FF0) >> 4;
-		data_array[ind++] = ((array[i * 2 - 1] & 0x000F) << 4) | ((array[i * 2 - 2] & 0x0F00) >> 8);
-		data_array[ind++] = array[i * 2 - 2] & 0x00FF;
-	}
-}
-
-//==============================================================================
-static inline clear_led_values()
-{
-	for( int i = 0; i < 16; i++)
-	{
-		led_values[i] = 0;
-	}
-}
 //------------------------------------------------------------------------------
 //      __                  __        __        __
 //     /  `  /\  |    |    |__)  /\  /  ` |__/ /__`

@@ -1,5 +1,5 @@
-#ifndef SPI_H
-#define SPI_H
+#ifndef TIMER_H
+#define TIMER_H
 
 //------------------------------------------------------------------------------
 //             __             __   ___  __
@@ -36,6 +36,11 @@
 //
 //------------------------------------------------------------------------------
 
+void timer_init();
+void timer_set_per();
+void timer_enable();
+void timer_disable();
+
 //------------------------------------------------------------------------------
 //      __        __          __
 //     |__) |  | |__) |    | /  `
@@ -43,17 +48,5 @@
 //
 //------------------------------------------------------------------------------
 
-void spi_init();
-void spi_write_led(uint8_t* ydata);
-void spi_write_video(uint8_t* data);
-void disable_spi_interrupt();
-void enable_spi_interrupt();
-uint8_t spi_read();
-uint8_t spi(uint8_t data);
-uint8_t spi_lock();
-void spi_unlock();
-uint8_t spi_newdata();
-uint8_t spi_latch();
-void spi_latch_set();
-void spi_latch_clr();
-#endif /* SPI_H */
+
+#endif /* TIMER_H */

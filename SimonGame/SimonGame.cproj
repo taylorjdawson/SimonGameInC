@@ -20,10 +20,10 @@
     <OverrideVtor>false</OverrideVtor>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
-    <RamSnippetAddress />
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
     <UncachedRange />
     <preserveEEPROM>true</preserveEEPROM>
-    <OverrideVtorValue />
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
     <eraseonlaunchrule>0</eraseonlaunchrule>
     <AsfFrameworkConfig>
@@ -38,6 +38,22 @@
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtoolserialnumber>00000000EZE000005407</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x10010305</avrdeviceexpectedsignature>
+    <avrtoolinterface>SWD</avrtoolinterface>
+    <com_atmel_avrdbg_tool_edbg>
+      <ToolOptions>
+        <InterfaceProperties>
+          <SwdClock>2000000</SwdClock>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
+      <ToolNumber>00000000EZE000005407</ToolNumber>
+      <ToolName>EDBG</ToolName>
+    </com_atmel_avrdbg_tool_edbg>
+    <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -111,9 +127,9 @@
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.2.276\samd21a\include</Value>
       <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.0.231\samd21a\include</Value>
       <Value>%24(PackRepoDir)\arm\cmsis\4.2.0\CMSIS\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.2.276\samd21a\include</Value>
       <Value>%24(PackRepoDir)\arm\CMSIS\4.2.0\CMSIS\Include\</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
@@ -132,6 +148,7 @@
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd21g18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
@@ -155,13 +172,58 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="buttons.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="buttons.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="counter.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="counter.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="delay.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Device_Startup\startup_samd21.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Device_Startup\system_samd21.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="event.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="event.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="font.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="font.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="spi.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="timer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="timer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="video.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="video.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

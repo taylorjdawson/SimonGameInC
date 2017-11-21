@@ -9,7 +9,7 @@
 #include "spi.h"
 #include "sam.h"
 #include "delay.h"
-
+#include "font.h"
 //------------------------------------------------------------------------------
 //      __   ___  ___         ___  __
 //     |  \ |__  |__  | |\ | |__  /__`
@@ -205,19 +205,84 @@ void video_paint_rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint1
   video(GRAM_ADDRESS_SET_Y, y); 
   video_index(GRAM_DATA_WRITE);
   chipsel_on();
-  spi_write(0x72);
+  spi_write_video(0x72);
   
   for (i = 0; i < width * height; i++)
   {
 	//video_parameter(color);
-	spi_write(color >> 8);
-	spi_write(color & 0xFF);
+	spi_write_video(color >> 8);
+	spi_write_video(color & 0xFF);
   }
   chipsel_off();
   
   video(NO_OP, 0x0000);
 }
 
+//==============================================================================
+void video_print_string(uint8_t * string, font_t *font,
+uint8_t x, uint8_t y, uint16_t fg, uint16_t bg)
+{
+	
+	uint16_t i;
+	uint8_t lower_byte;
+	uint16_t str_len = strlen(string);
+	video_set_window(x, y, (font->width * strlen(string)), font->height);
+	video(GRAM_ADDRESS_SET_X, x + 0x0020);
+	video(GRAM_ADDRESS_SET_Y, y);
+	video_index(GRAM_DATA_WRITE);
+	chipsel_on();
+	spi_write_video(0x72);
+	
+	for (i = 0; i < font->height; i++)					// for each row
+	{
+		for (uint16_t j = 0; j < str_len; j++)	// for each character in string
+		{
+			char c = string[j];
+			uint16_t index = font->width == 12 ? (c - 32) * font->height * 2 : ( (c - 32) * font->height);
+			index += font->width == 12 ? (i * 2) : i;
+			uint8_t byte = font->ptr[index];
+			
+			if (font->width == 12)
+			{
+				lower_byte = font->ptr[index + 1];
+			}
+			
+			for (uint8_t k = 0; k < font->width; k++) // for each bit in column (byte) font width
+			{
+				if(k < 8)
+				{
+					if (byte & 1 << (7 - k))
+					{
+						spi_write_video(fg >> 8);		// paint foreground
+						spi_write_video(fg & 0xFF);
+					}
+					else
+					{
+						spi_write_video(bg >> 8);		// paint background
+						spi_write_video(bg & 0xFF);
+					}
+				}
+				else
+				{
+					if (lower_byte & 1 << (15 - k))
+					{
+						spi_write_video(fg >> 8);		// paint foreground
+						spi_write_video(fg & 0xFF);
+					}
+					else
+					{
+						spi_write_video(bg >> 8);		// paint background
+						spi_write_video(bg & 0xFF);
+					}
+				}
+			}
+		}
+	}
+	
+	chipsel_off();
+	video(NO_OP, 0x0000);
+	
+}
 //------------------------------------------------------------------------------
 //      __   __              ___  ___
 //     |__) |__) | \  /  /\   |  |__
@@ -236,9 +301,9 @@ static void video(uint16_t index, uint16_t parameter)
 static void video_index(uint16_t val)
 {
   chipsel_on();
-  spi_write(0x70);
-  spi_write(0x00);
-  spi_write(val & 0x00FF);
+  spi_write_video(0x70);
+  spi_write_video(0x00);
+  spi_write_video(val & 0x00FF);
   chipsel_off();
 }
 
@@ -246,9 +311,9 @@ static void video_index(uint16_t val)
 static void video_parameter(uint16_t val)
 {
   chipsel_on();
-  spi_write(0x72);
-  spi_write(val >> 8);
-  spi_write(val & 0xFF);
+  spi_write_video(0x72);
+  spi_write_video(val >> 8);
+  spi_write_video(val & 0xFF);
   chipsel_off();
 }
 

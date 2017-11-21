@@ -5,10 +5,8 @@
 //
 //------------------------------------------------------------------------------
 
-#include "led.h"
-#include "spi.h"
-
-
+#include "event.h"
+#include "sam.h"
 
 //------------------------------------------------------------------------------
 //      __   ___  ___         ___  __
@@ -30,15 +28,13 @@
 //      \/  /~~\ |  \ | /~~\ |__) |___ |___ .__/
 //
 //------------------------------------------------------------------------------
-uint16_t led_values[16];
-uint8_t data[24];
+
 //------------------------------------------------------------------------------
 //      __   __   __  ___  __  ___      __   ___  __
 //     |__) |__) /  \  |  /  \  |  \ / |__) |__  /__`
 //     |    |  \ \__/  |  \__/  |   |  |    |___ .__/
 //
 //------------------------------------------------------------------------------
-static void bit_conversion(uint16_t* array, uint8_t* data_array);
 
 //------------------------------------------------------------------------------
 //      __        __          __
@@ -47,39 +43,34 @@ static void bit_conversion(uint16_t* array, uint8_t* data_array);
 //
 //------------------------------------------------------------------------------
 
-void rgb(uint8_t light_select, uint8_t red, uint8_t green, uint8_t blue)
-{
-	red_set(light_select, red);
-	green_set(light_select, green);
-	blue_set(light_select, blue);
-	bit_conversion(led_values, data);
-	spi_write(data);
-}
-
 //==============================================================================
-void red_set(uint8_t light_select, uint8_t led_value)
+void event_init()
 {
-	led_values[light_select*3-3] = led_value * 16;
-	bit_conversion(led_values, data);
-	spi_write(data);
-}
+	// Enable the bus clock for the Event System
+	PM->APBCMASK.bit.EVSYS_ = 1;
 
-//==============================================================================
-void green_set(uint8_t light_select, uint8_t led_value)
-{
-	led_values[light_select*3-2] = led_value * 16;
-	bit_conversion(led_values, data);
-	spi_write(data);
-}
+    // Configure the General Clock with the 48MHz clk
+	GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_EVSYS_0) |
+	                    GCLK_CLKCTRL_GEN_GCLK0 |
+	                    GCLK_CLKCTRL_CLKEN;
+						
+	// Wait for the GCLK to be synchronized
+	while(GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY);
 
-//==============================================================================
-void blue_set(uint8_t light_select, uint8_t led_value)
-{
-	led_values[light_select*3-1] = led_value * 16;
-	bit_conversion(led_values, data);
-	spi_write(data);
+    // Reset the event system
+	EVSYS->CTRL.bit.SWRST = 1;
+	
+    // Use Channel 0 - Note that 1 must be added to the channel in the USER
+    // Set up the User as TC3 (0x12)
+	EVSYS->USER.reg = EVSYS_USER_CHANNEL(0+1) | EVSYS_USER_USER(0x12);
+	
+	// Set up the channel generator as TCC0_MCX0 (0x25)
+	// The Async and Sync paths both work, but the SINGLE edges don't seem to
+	EVSYS->CHANNEL.reg = EVSYS_CHANNEL_CHANNEL(0)          |
+	                     EVSYS_CHANNEL_EDGSEL_RISING_EDGE  |
+						 EVSYS_CHANNEL_PATH_ASYNCHRONOUS   |
+						 EVSYS_CHANNEL_EVGEN(0x25);
 }
-
 
 //------------------------------------------------------------------------------
 //      __   __              ___  ___
@@ -88,27 +79,6 @@ void blue_set(uint8_t light_select, uint8_t led_value)
 //
 //------------------------------------------------------------------------------
 
-//==============================================================================
-static void bit_conversion(uint16_t* array, uint8_t* data_array)
-{
-	uint8_t ind = 0;
-	
-	for (int i = 8; i > 0; i--)
-	{
-		data_array[ind++] = (array[i * 2 - 1] & 0x0FF0) >> 4;
-		data_array[ind++] = ((array[i * 2 - 1] & 0x000F) << 4) | ((array[i * 2 - 2] & 0x0F00) >> 8);
-		data_array[ind++] = array[i * 2 - 2] & 0x00FF;
-	}
-}
-
-//==============================================================================
-static inline clear_led_values()
-{
-	for( int i = 0; i < 16; i++)
-	{
-		led_values[i] = 0;
-	}
-}
 //------------------------------------------------------------------------------
 //      __                  __        __        __
 //     /  `  /\  |    |    |__)  /\  /  ` |__/ /__`

@@ -1,5 +1,5 @@
-#ifndef SPI_H
-#define SPI_H
+#ifndef COUNTER_H
+#define COUNTER_H
 
 //------------------------------------------------------------------------------
 //             __             __   ___  __
@@ -7,6 +7,8 @@
 //     | | \| \__, |___ \__/ |__/ |___ .__/
 //
 //------------------------------------------------------------------------------
+
+#include "sam.h"
 
 //------------------------------------------------------------------------------
 //      __   ___  ___         ___  __
@@ -36,6 +38,11 @@
 //
 //------------------------------------------------------------------------------
 
+void counter_init();
+void counter_enable();
+void counter_disable();
+void counter_set(uint8_t value);
+
 //------------------------------------------------------------------------------
 //      __        __          __
 //     |__) |  | |__) |    | /  `
@@ -43,17 +50,5 @@
 //
 //------------------------------------------------------------------------------
 
-void spi_init();
-void spi_write_led(uint8_t* ydata);
-void spi_write_video(uint8_t* data);
-void disable_spi_interrupt();
-void enable_spi_interrupt();
-uint8_t spi_read();
-uint8_t spi(uint8_t data);
-uint8_t spi_lock();
-void spi_unlock();
-uint8_t spi_newdata();
-uint8_t spi_latch();
-void spi_latch_set();
-void spi_latch_clr();
-#endif /* SPI_H */
+
+#endif /* COUNTER_H */

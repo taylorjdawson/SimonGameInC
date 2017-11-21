@@ -7,6 +7,7 @@
 //     | | \| \__, |___ \__/ |__/ |___ .__/
 //
 //------------------------------------------------------------------------------
+#include <stdint.h>
 
 //------------------------------------------------------------------------------
 //      __   ___  ___         ___  __
@@ -42,7 +43,7 @@
 //     |    \__/ |__) |___ | \__,
 //
 //------------------------------------------------------------------------------
-void rgb(uint8_t light_select, uint8_t red, uint8_t green, uint8_t blue)
+void rgb(uint8_t light_select, uint8_t red, uint8_t green, uint8_t blue);
 void red_set(uint8_t light_select, uint8_t led_value);
 void green_set(uint8_t light_select, uint8_t led_value);
 void blue_set(uint8_t light_select, uint8_t led_value);
